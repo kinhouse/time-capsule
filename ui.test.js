@@ -9,7 +9,7 @@
 // catch a UA-vs-author cascade issue in unit tests).  Tests for bug 3 also
 // cover the JS-level wiring: that the gcal link gets a real URL on submit.
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, resolve } from 'path'
@@ -72,26 +72,17 @@ describe('Bug 3 – Add to Google Calendar', () => {
           </div>
           <textarea id="description"></textarea>
           <input type="text" id="location" />
-          <button type="submit">Generate</button>
+          <button type="submit">Add to Google Calendar</button>
         </form>
-        <section id="result" hidden>
-          <div id="result-date"></div>
-          <a id="gcal-link" href="#"></a>
-          <button id="copy-btn">Copy link</button>
-          <button id="reset-btn">Make another</button>
-        </section>
       `
     }
 
     // Wire the submit handler the same way main.js does (without the SW / env bits)
     function wireSubmit() {
-      const presetSelect   = document.getElementById('date-preset')
+      const presetSelect    = document.getElementById('date-preset')
       const customDateInput = document.getElementById('custom-date')
-      const allDayCheckbox = document.getElementById('all-day')
-      const form           = document.getElementById('invite-form')
-      const result         = document.getElementById('result')
-      const gcalLink       = document.getElementById('gcal-link')
-      const resultDate     = document.getElementById('result-date')
+      const allDayCheckbox  = document.getElementById('all-day')
+      const form            = document.getElementById('invite-form')
 
       function getTargetDate() {
         if (presetSelect.value === 'custom')
@@ -116,42 +107,38 @@ describe('Bug 3 – Add to Google Calendar', () => {
           description: document.getElementById('description').value.trim(),
           location:    document.getElementById('location').value.trim(),
         })
-        gcalLink.href = url
-        form.hidden   = true
-        result.hidden = false
+        window.open(url, '_blank')
       })
     }
 
-    it('gcal link starts as "#" before submission', () => {
+    it('opens a real Google Calendar URL in a new tab on submission', () => {
       buildFullDOM()
-      const gcalLink = document.getElementById('gcal-link')
-      expect(gcalLink.getAttribute('href')).toBe('#')
-    })
-
-    it('gcal link is a real Google Calendar URL after a valid submission', () => {
-      buildFullDOM()
+      const openMock = vi.fn()
+      window.open = openMock
       wireSubmit()
 
       document.getElementById('invite-form').dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true })
       )
 
-      const href = document.getElementById('gcal-link').href
-      expect(href).toContain('calendar.google.com')
-      expect(href).toContain('action=TEMPLATE')
-      expect(href).toContain('Future+Reunion')
+      expect(openMock).toHaveBeenCalledOnce()
+      const [url, target] = openMock.mock.calls[0]
+      expect(url).toContain('calendar.google.com')
+      expect(url).toContain('action=TEMPLATE')
+      expect(url).toContain('Future+Reunion')
+      expect(target).toBe('_blank')
     })
 
-    it('result section is shown and form is hidden after a valid submission', () => {
+    it('form remains visible after submission', () => {
       buildFullDOM()
+      window.open = vi.fn()
       wireSubmit()
 
       document.getElementById('invite-form').dispatchEvent(
         new window.Event('submit', { bubbles: true, cancelable: true })
       )
 
-      expect(document.getElementById('result').hidden).toBe(false)
-      expect(document.getElementById('invite-form').hidden).toBe(true)
+      expect(document.getElementById('invite-form').hidden).toBe(false)
     })
   })
 })

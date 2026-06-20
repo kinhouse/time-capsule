@@ -19,11 +19,6 @@ const customDateInput = document.getElementById('custom-date')
 const allDayCheckbox = document.getElementById('all-day')
 const timeFields = document.getElementById('time-fields')
 const form = document.getElementById('invite-form')
-const result = document.getElementById('result')
-const gcalLink = document.getElementById('gcal-link')
-const copyBtn = document.getElementById('copy-btn')
-const resetBtn = document.getElementById('reset-btn')
-const resultDate = document.getElementById('result-date')
 const liveCountdown = document.getElementById('live-countdown')
 
 const tomorrow = new Date()
@@ -73,27 +68,8 @@ form.addEventListener('submit', e => {
   const { startStr, endStr } = buildDateStrings(target, { allDay, startTime, endTime })
   const url = buildGCalUrl({ title, startStr, endStr, description, location })
 
-  gcalLink.href = url
-  resultDate.innerHTML = `<strong>${formatDisplayDate(target)}</strong>${formatRelative(target)} from now`
-  form.hidden = true
-  result.hidden = false
-  result.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  window.open(url, '_blank')
 })
 
-copyBtn.addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(gcalLink.href)
-    copyBtn.textContent = 'Copied!'
-  } catch {
-    copyBtn.textContent = 'Copy failed'
-  }
-  setTimeout(() => { copyBtn.textContent = 'Copy link' }, 2000)
-})
-
-resetBtn.addEventListener('click', () => {
-  result.hidden = true
-  form.hidden = false
-  form.scrollIntoView({ behavior: 'smooth', block: 'start' })
-})
 
 updateLiveCountdown()
