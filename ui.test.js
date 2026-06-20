@@ -17,6 +17,7 @@ import {
   computePresetDate,
   buildDateStrings,
   buildGCalUrl,
+  requestCurrentLocation,
 } from './lib.js'
 import { initInstallBanner } from './banner.js'
 
@@ -256,5 +257,132 @@ describe('Update banner', () => {
       document.getElementById('update-reload').click()
       expect(worker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
     })
+  })
+})
+
+// ── requestCurrentLocation ────────────────────────────────────────────────────
+
+describe('requestCurrentLocation', () => {
+  it('returns empty string when geolocation is unavailable', async () => {
+    expect(await requestCurrentLocation(null)).toBe('')
+  })
+
+  it('returns "lat,lng" string when geolocation succeeds', async () => {
+    const mockGeo = {
+      getCurrentPosition: (success) =>
+        success({ coords: { latitude: 37.7749, longitude: -122.4194 } }),
+    }
+    expect(await requestCurrentLocation(mockGeo)).toBe('37.7749,-122.4194')
+  })
+
+  it('returns empty string when user denies geolocation', async () => {
+    const mockGeo = {
+      getCurrentPosition: (_success, error) => error(new Error('denied')),
+    }
+    expect(await requestCurrentLocation(mockGeo)).toBe('')
+  })
+})
+
+// ── Geolocation integration on form submit ────────────────────────────────────
+
+describe('geolocation on form submit', () => {
+  function buildGeoFormDOM() {
+    document.body.innerHTML = `
+      <form id="invite-form" novalidate>
+        <input type="text" id="title" value="Future Reunion" />
+        <select id="date-preset"><option value="20" selected>20 years</option></select>
+        <div id="custom-date-field" hidden><input type="date" id="custom-date" /></div>
+        <div id="live-countdown"></div>
+        <label><input type="checkbox" id="all-day" checked />All-day</label>
+        <div id="time-fields" hidden>
+          <input type="time" id="start-time" value="10:00" />
+          <input type="time" id="end-time" value="11:00" />
+        </div>
+        <textarea id="description"></textarea>
+        <input type="text" id="location" />
+        <button type="submit">Add to Google Calendar</button>
+      </form>
+    `
+  }
+
+  function wireAsyncSubmit(geolocation) {
+    const presetSelect    = document.getElementById('date-preset')
+    const customDateInput = document.getElementById('custom-date')
+    const allDayCheckbox  = document.getElementById('all-day')
+    const form            = document.getElementById('invite-form')
+
+    function getTargetDate() {
+      if (presetSelect.value === 'custom')
+        return customDateInput.value ? new Date(customDateInput.value) : null
+      return computePresetDate(parseInt(presetSelect.value))
+    }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault()
+      const title = document.getElementById('title').value.trim()
+      if (!title) return
+      const target = getTargetDate()
+      if (!target) return
+      const allDay    = allDayCheckbox.checked
+      const startTime = document.getElementById('start-time').value
+      const endTime   = document.getElementById('end-time').value
+      const { startStr, endStr } = buildDateStrings(target, { allDay, startTime, endTime })
+      const typedLocation = document.getElementById('location').value.trim()
+      const location = typedLocation || await requestCurrentLocation(geolocation)
+      const url = buildGCalUrl({
+        title,
+        startStr,
+        endStr,
+        description: document.getElementById('description').value.trim(),
+        location,
+      })
+      window.open(url, '_blank')
+    })
+  }
+
+  it('includes coordinates in URL when geolocation is granted', async () => {
+    buildGeoFormDOM()
+    window.open = vi.fn()
+    const mockGeo = {
+      getCurrentPosition: (success) =>
+        success({ coords: { latitude: 51.5074, longitude: -0.1278 } }),
+    }
+    wireAsyncSubmit(mockGeo)
+    document.getElementById('invite-form').dispatchEvent(
+      new window.Event('submit', { bubbles: true, cancelable: true })
+    )
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(window.open).toHaveBeenCalledOnce()
+    expect(window.open.mock.calls[0][0]).toContain('51.5074')
+    expect(window.open.mock.calls[0][0]).toContain('-0.1278')
+  })
+
+  it('opens without location param when user denies geolocation', async () => {
+    buildGeoFormDOM()
+    window.open = vi.fn()
+    const mockGeo = {
+      getCurrentPosition: (_success, error) => error(new Error('denied')),
+    }
+    wireAsyncSubmit(mockGeo)
+    document.getElementById('invite-form').dispatchEvent(
+      new window.Event('submit', { bubbles: true, cancelable: true })
+    )
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(window.open).toHaveBeenCalledOnce()
+    expect(window.open.mock.calls[0][0]).not.toContain('location')
+  })
+
+  it('uses typed location and skips geolocation when location field is filled', async () => {
+    buildGeoFormDOM()
+    document.getElementById('location').value = 'Mars Colony Alpha'
+    window.open = vi.fn()
+    const mockGeo = { getCurrentPosition: vi.fn() }
+    wireAsyncSubmit(mockGeo)
+    document.getElementById('invite-form').dispatchEvent(
+      new window.Event('submit', { bubbles: true, cancelable: true })
+    )
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(mockGeo.getCurrentPosition).not.toHaveBeenCalled()
+    expect(window.open.mock.calls[0][0]).toContain('Mars+Colony+Alpha')
   })
 })

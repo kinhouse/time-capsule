@@ -62,6 +62,17 @@ export function isIosSafari(ua) {
   return /iP(hone|ad|od)/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)
 }
 
+export function requestCurrentLocation(geolocation) {
+  if (!geolocation) return Promise.resolve('')
+  return new Promise(resolve => {
+    geolocation.getCurrentPosition(
+      pos => resolve(`${pos.coords.latitude},${pos.coords.longitude}`),
+      () => resolve(''),
+      { timeout: 5000 },
+    )
+  })
+}
+
 export function buildGCalUrl({ title, startStr, endStr, description, location }) {
   const params = new URLSearchParams({
     action: 'TEMPLATE',
