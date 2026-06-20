@@ -24,13 +24,13 @@ export function formatRelative(date, now = new Date()) {
   const totalDays = Math.floor((date - now) / msPerDay)
   if (totalDays <= 0) return 'That date has already passed'
 
-  const years = Math.floor(totalDays / 365.25)
-  const leftoverDays = totalDays - Math.floor(years * 365.25)
-  const months = Math.floor(leftoverDays / 30.44)
-  const days = Math.floor(leftoverDays - months * 30.44)
+  const years = Math.round(totalDays / 365.25)
+  if (years >= 1) return `${years} year${years !== 1 ? 's' : ''}`
+
+  const months = Math.floor(totalDays / 30.44)
+  const days = Math.floor(totalDays - months * 30.44)
 
   const parts = []
-  if (years) parts.push(`${years} year${years !== 1 ? 's' : ''}`)
   if (months) parts.push(`${months} month${months !== 1 ? 's' : ''}`)
   if (days || !parts.length) parts.push(`${days} day${days !== 1 ? 's' : ''}`)
 

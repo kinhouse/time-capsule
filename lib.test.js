@@ -220,11 +220,23 @@ describe('formatRelative', () => {
       .not.toContain('day')
   })
 
-  it('shows compound "years, months" duration', () => {
-    // 400 days: years=1, leftover=35, months=1, days=4 → "1 year, 1 month, 4 days"
+  it('rounds to nearest year when >= 1 year away', () => {
+    // 400 days: round(400/365.25) = 1 → "1 year"
     const result = formatRelative(new Date(BASE.getTime() + 400 * DAY), BASE)
-    expect(result).toMatch(/year/)
-    expect(result).toMatch(/month/)
+    expect(result).toBe('1 year')
+  })
+
+  it('rounds up to next year when close enough', () => {
+    // ~19 years 11 months 30 days: round to 20 years
+    const days = Math.round(19.95 * 365.25)
+    const result = formatRelative(new Date(BASE.getTime() + days * DAY), BASE)
+    expect(result).toBe('20 years')
+  })
+
+  it('does not show months or days for multi-year durations', () => {
+    const result = formatRelative(new Date(BASE.getTime() + 400 * DAY), BASE)
+    expect(result).not.toContain('month')
+    expect(result).not.toContain('day')
   })
 
   it('handles 60 years', () => {
