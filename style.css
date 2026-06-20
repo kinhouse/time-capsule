@@ -27,6 +27,9 @@
   }
 }
 
+/* Prevent author display:flex/block rules from overriding the UA [hidden] rule */
+[hidden] { display: none !important; }
+
 * {
   box-sizing: border-box;
   margin: 0;
