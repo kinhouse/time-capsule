@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <meta name="description" content="Schedule an event in the far future and add it to Google Calendar" />
+  <link rel="manifest" href="/Future/manifest.json" />
+  <link rel="icon" href="/Future/icons/icon.svg" type="image/svg+xml" />
+  <title>Future Calendar</title>
+  <script type="module" crossorigin src="/Future/assets/index-CIvEws3O.js"></script>
+  <link rel="stylesheet" crossorigin href="/Future/assets/index-B8Gw0XOK.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="logo">
+        <img src="/Future/icons/icon.svg" alt="" width="40" height="40" />
+      </div>
+      <h1>Future Calendar</h1>
+      <p>Schedule an event in the far future</p>
+    </header>
+
+    <main>
+      <form id="invite-form" novalidate>
+        <div class="field">
+          <label for="title">Event title</label>
+          <input
+            type="text"
+            id="title"
+            required
+            placeholder="e.g. The Class of 2026 Reunion"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="date-preset">When?</label>
+          <select id="date-preset">
+            <option value="5">5 years from now</option>
+            <option value="10">10 years from now</option>
+            <option value="15">15 years from now</option>
+            <option value="20" selected>20 years from now</option>
+            <option value="25">25 years from now</option>
+            <option value="30">30 years from now</option>
+            <option value="35">35 years from now</option>
+            <option value="40">40 years from now</option>
+            <option value="45">45 years from now</option>
+            <option value="50">50 years from now</option>
+            <option value="55">55 years from now</option>
+            <option value="60">60 years from now</option>
+            <option value="custom">Custom date…</option>
+          </select>
+        </div>
+
+        <div class="field" id="custom-date-field" hidden>
+          <label for="custom-date">Date</label>
+          <input type="date" id="custom-date" />
+        </div>
+
+        <div id="live-countdown" class="live-countdown" aria-live="polite"></div>
+
+        <div class="field checkbox-field">
+          <label>
+            <input type="checkbox" id="all-day" checked />
+            All-day event
+          </label>
+        </div>
+
+        <div class="field time-row" id="time-fields" hidden>
+          <div>
+            <label for="start-time">Start time</label>
+            <input type="time" id="start-time" value="10:00" />
+          </div>
+          <div>
+            <label for="end-time">End time</label>
+            <input type="time" id="end-time" value="11:00" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="description">Description <span class="optional">(optional)</span></label>
+          <textarea id="description" rows="3" placeholder="What's this future event about?"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="location">Location <span class="optional">(optional)</span></label>
+          <input type="text" id="location" placeholder="e.g. Mars Colony Alpha, or a video link" />
+        </div>
+
+        <button type="submit" class="submit-btn">Generate Invite →</button>
+      </form>
+
+      <section id="result" class="result" hidden aria-live="polite">
+        <div class="result-date" id="result-date"></div>
+        <a id="gcal-link" href="#" target="_blank" rel="noopener noreferrer" class="gcal-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="#fff" d="M19.5 3h-3V1.5h-1.5V3h-6V1.5H7.5V3h-3C3.675 3 3 3.675 3 4.5v15c0 .825.675 1.5 1.5 1.5h15c.825 0 1.5-.675 1.5-1.5v-15c0-.825-.675-1.5-1.5-1.5zm0 16.5h-15V9h15v10.5zM7.5 6H6V4.5h1.5V6zm9 0h-1.5V4.5H16.5V6z"/>
+          </svg>
+          Add to Google Calendar
+        </a>
+        <button id="copy-btn" class="copy-btn">Copy link</button>
+        <button id="reset-btn" class="reset-btn">← Make another</button>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>
