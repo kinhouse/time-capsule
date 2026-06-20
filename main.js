@@ -5,7 +5,6 @@ import {
   formatDisplayDate,
   buildDateStrings,
   buildGCalUrl,
-  requestCurrentLocation,
 } from './lib.js'
 import { initInstallBanner } from './banner.js'
 
@@ -76,7 +75,7 @@ allDayCheckbox.addEventListener('change', () => {
   timeFields.hidden = allDayCheckbox.checked
 })
 
-form.addEventListener('submit', async e => {
+form.addEventListener('submit', e => {
   e.preventDefault()
 
   const title = document.getElementById('title').value.trim()
@@ -87,8 +86,7 @@ form.addEventListener('submit', async e => {
 
   const allDay = allDayCheckbox.checked
   const description = document.getElementById('description').value.trim()
-  const typedLocation = document.getElementById('location').value.trim()
-  const location = typedLocation || await requestCurrentLocation(navigator.geolocation)
+  const location = document.getElementById('location').value.trim()
   const startTime = document.getElementById('start-time').value
   const endTime = document.getElementById('end-time').value
 
@@ -97,6 +95,18 @@ form.addEventListener('submit', async e => {
 
   window.open(url, '_blank')
 })
+
+if (navigator.geolocation) {
+  const locationInput = document.getElementById('location')
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      if (!locationInput.value.trim()) {
+        locationInput.value = `${pos.coords.latitude},${pos.coords.longitude}`
+      }
+    },
+    () => {},
+  )
+}
 
 
 updateLiveCountdown()
