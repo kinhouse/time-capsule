@@ -1,7 +1,7 @@
 {
-  "name": "Future Calendar",
-  "short_name": "FutureCal",
-  "description": "Schedule events in the far future and add them to Google Calendar",
+  "name": "Time Capsule",
+  "short_name": "TimeCapsule",
+  "description": "Create time capsule events and add them to Google Calendar",
   "start_url": "/Future/",
   "display": "standalone",
   "background_color": "#0b0b18",
