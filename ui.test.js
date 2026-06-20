@@ -267,6 +267,14 @@ describe('Update banner', () => {
   })
 })
 
+// ── Overscroll / panning behaviour ───────────────────────────────────────────
+
+describe('overscroll panning', () => {
+  it('style.css sets overscroll-behavior: none on html and body to suppress rubber-band panning', () => {
+    expect(css).toMatch(/html\s*,\s*body\s*\{[^}]*overscroll-behavior\s*:\s*none/)
+  })
+})
+
 // ── Geolocation auto-fill on page load ───────────────────────────────────────
 
 describe('geolocation auto-fill on page load', () => {

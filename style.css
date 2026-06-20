@@ -30,6 +30,11 @@
 /* Prevent author display:flex/block rules from overriding the UA [hidden] rule */
 [hidden] { display: none !important; }
 
+html,
+body {
+  overscroll-behavior: none;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
