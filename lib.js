@@ -58,6 +58,10 @@ export function buildDateStrings(date, { allDay, startTime, endTime }) {
   }
 }
 
+export function isIosSafari(ua) {
+  return /iP(hone|ad|od)/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua)
+}
+
 export function buildGCalUrl({ title, startStr, endStr, description, location }) {
   const params = new URLSearchParams({
     action: 'TEMPLATE',

@@ -6,6 +6,7 @@ import {
   formatRelative,
   buildDateStrings,
   buildGCalUrl,
+  isIosSafari,
 } from './lib.js'
 
 const DAY = 86_400_000
@@ -456,5 +457,40 @@ describe('buildGCalUrl', () => {
     const url = buildGCalUrl({ ...defaults, title: '🚀 Future Meetup 2086 日本語' })
     expect(() => new URL(url)).not.toThrow()
     expect(url).toContain('text=')
+  })
+})
+
+// ── isIosSafari ─────────────────────────────────────────────────────────────
+
+const IOS_SAFARI_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+const IPAD_SAFARI_UA = 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+const IOS_CHROME_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/118.0.0.0 Mobile/15E148 Safari/604.1'
+const IOS_FIREFOX_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/118.0 Mobile/15E148 Safari/604.1'
+const ANDROID_CHROME_UA = 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36'
+const DESKTOP_SAFARI_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15'
+
+describe('isIosSafari', () => {
+  it('returns true for iPhone Safari', () => {
+    expect(isIosSafari(IOS_SAFARI_UA)).toBe(true)
+  })
+
+  it('returns true for iPad Safari', () => {
+    expect(isIosSafari(IPAD_SAFARI_UA)).toBe(true)
+  })
+
+  it('returns false for Chrome on iOS (CriOS)', () => {
+    expect(isIosSafari(IOS_CHROME_UA)).toBe(false)
+  })
+
+  it('returns false for Firefox on iOS (FxiOS)', () => {
+    expect(isIosSafari(IOS_FIREFOX_UA)).toBe(false)
+  })
+
+  it('returns false for Android Chrome', () => {
+    expect(isIosSafari(ANDROID_CHROME_UA)).toBe(false)
+  })
+
+  it('returns false for desktop Safari', () => {
+    expect(isIosSafari(DESKTOP_SAFARI_UA)).toBe(false)
   })
 })

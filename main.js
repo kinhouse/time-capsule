@@ -6,6 +6,7 @@ import {
   buildDateStrings,
   buildGCalUrl,
 } from './lib.js'
+import { initInstallBanner } from './banner.js'
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -97,3 +98,11 @@ resetBtn.addEventListener('click', () => {
 })
 
 updateLiveCountdown()
+
+initInstallBanner({
+  ua: navigator.userAgent,
+  standalone: navigator.standalone,
+  storage: localStorage,
+  banner: document.getElementById('install-banner'),
+  dismissBtn: document.getElementById('install-dismiss'),
+})

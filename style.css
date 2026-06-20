@@ -317,6 +317,51 @@ input[type="checkbox"] {
   color: var(--text);
 }
 
+/* Install banner */
+.install-banner {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 2rem);
+  max-width: 480px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  box-shadow: 0 4px 24px #00000055;
+  z-index: 100;
+  font-size: 0.9rem;
+}
+
+.install-banner span {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.install-share-inline {
+  vertical-align: middle;
+  margin: 0 1px;
+}
+
+.install-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.35rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.install-dismiss:hover {
+  color: var(--text);
+}
+
 @media (prefers-color-scheme: light) {
   body::before {
     display: none;

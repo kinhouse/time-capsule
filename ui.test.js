@@ -18,6 +18,7 @@ import {
   buildDateStrings,
   buildGCalUrl,
 } from './lib.js'
+import { initInstallBanner } from './banner.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -153,5 +154,72 @@ describe('Bug 3 – Add to Google Calendar', () => {
       expect(document.getElementById('result').hidden).toBe(false)
       expect(document.getElementById('invite-form').hidden).toBe(true)
     })
+  })
+})
+
+// ── Install banner ────────────────────────────────────────────────────────────
+
+const IOS_SAFARI_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+
+function buildBannerDOM() {
+  document.body.innerHTML = `
+    <div id="install-banner" hidden>
+      <button id="install-dismiss">✕</button>
+    </div>
+  `
+}
+
+function mockStorage(initial = {}) {
+  const store = { ...initial }
+  return {
+    getItem: k => store[k] ?? null,
+    setItem: (k, v) => { store[k] = v },
+  }
+}
+
+describe('install banner', () => {
+  it('shows banner on iOS Safari when not standalone and not dismissed', () => {
+    buildBannerDOM()
+    const banner = document.getElementById('install-banner')
+    const dismissBtn = document.getElementById('install-dismiss')
+    initInstallBanner({ ua: IOS_SAFARI_UA, standalone: false, storage: mockStorage(), banner, dismissBtn })
+    expect(banner.hidden).toBe(false)
+  })
+
+  it('keeps banner hidden when already in standalone mode', () => {
+    buildBannerDOM()
+    const banner = document.getElementById('install-banner')
+    const dismissBtn = document.getElementById('install-dismiss')
+    initInstallBanner({ ua: IOS_SAFARI_UA, standalone: true, storage: mockStorage(), banner, dismissBtn })
+    expect(banner.hidden).toBe(true)
+  })
+
+  it('keeps banner hidden when previously dismissed', () => {
+    buildBannerDOM()
+    const banner = document.getElementById('install-banner')
+    const dismissBtn = document.getElementById('install-dismiss')
+    initInstallBanner({ ua: IOS_SAFARI_UA, standalone: false, storage: mockStorage({ 'aths-dismissed': '1' }), banner, dismissBtn })
+    expect(banner.hidden).toBe(true)
+  })
+
+  it('keeps banner hidden on non-iOS browsers', () => {
+    buildBannerDOM()
+    const banner = document.getElementById('install-banner')
+    const dismissBtn = document.getElementById('install-dismiss')
+    const androidUA = 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 Chrome/116.0.0.0 Mobile Safari/537.36'
+    initInstallBanner({ ua: androidUA, standalone: false, storage: mockStorage(), banner, dismissBtn })
+    expect(banner.hidden).toBe(true)
+  })
+
+  it('dismiss button hides banner and sets dismissed flag in storage', () => {
+    buildBannerDOM()
+    const banner = document.getElementById('install-banner')
+    const dismissBtn = document.getElementById('install-dismiss')
+    const storage = mockStorage()
+    initInstallBanner({ ua: IOS_SAFARI_UA, standalone: false, storage, banner, dismissBtn })
+    expect(banner.hidden).toBe(false)
+    dismissBtn.click()
+    expect(banner.hidden).toBe(true)
+    expect(storage.getItem('aths-dismissed')).toBe('1')
   })
 })
