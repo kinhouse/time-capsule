@@ -342,11 +342,6 @@ input[type="checkbox"] {
   line-height: 1.4;
 }
 
-.install-share-inline {
-  vertical-align: middle;
-  margin: 0 1px;
-}
-
 .install-dismiss {
   background: transparent;
   border: none;
