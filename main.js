@@ -87,7 +87,8 @@ form.addEventListener('submit', e => {
 
   const allDay = allDayCheckbox.checked
   const description = document.getElementById('description').value.trim()
-  const location = document.getElementById('location').value.trim()
+  const locationInput = document.getElementById('location')
+  const location = locationInput.dataset.geoValue || locationInput.value.trim()
   const startTime = document.getElementById('start-time').value
   const endTime = document.getElementById('end-time').value
 
@@ -102,11 +103,17 @@ if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     pos => {
       if (!locationInput.value.trim()) {
-        locationInput.value = `${pos.coords.latitude},${pos.coords.longitude}`
+        locationInput.dataset.geoValue = `${pos.coords.latitude},${pos.coords.longitude}`
+        locationInput.value = 'Current location'
+        locationInput.classList.add('geo-filled')
       }
     },
     () => {},
   )
+  locationInput.addEventListener('input', () => {
+    delete locationInput.dataset.geoValue
+    locationInput.classList.remove('geo-filled')
+  })
 }
 
 

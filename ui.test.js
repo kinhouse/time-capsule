@@ -110,12 +110,14 @@ describe('Bug 3 – Add to Google Calendar', () => {
         const startTime = document.getElementById('start-time').value
         const endTime   = document.getElementById('end-time').value
         const { startStr, endStr } = buildDateStrings(target, { allDay, startTime, endTime })
+        const locationInput = document.getElementById('location')
+        const location = locationInput.dataset.geoValue || locationInput.value.trim()
         const url = buildGCalUrl({
           title,
           startStr,
           endStr,
           description: document.getElementById('description').value.trim(),
-          location:    document.getElementById('location').value.trim(),
+          location,
         })
         window.open(url, '_blank')
       })
@@ -137,6 +139,23 @@ describe('Bug 3 – Add to Google Calendar', () => {
       expect(url).toContain('action=TEMPLATE')
       expect(url).toContain('Future+Reunion')
       expect(target).toBe('_blank')
+    })
+
+    it('uses dataset.geoValue coordinates in the calendar URL when location shows "Current location"', () => {
+      buildFullDOM()
+      const locationInput = document.getElementById('location')
+      locationInput.value = 'Current location'
+      locationInput.dataset.geoValue = '37.7749,-122.4194'
+      window.open = vi.fn()
+      wireSubmit()
+
+      document.getElementById('invite-form').dispatchEvent(
+        new window.Event('submit', { bubbles: true, cancelable: true })
+      )
+
+      const [url] = window.open.mock.calls[0]
+      expect(url).toContain('37.7749')
+      expect(url).not.toContain('Current+location')
     })
 
     it('form remains visible after submission', () => {
@@ -275,6 +294,14 @@ describe('overscroll panning', () => {
   })
 })
 
+// ── Header ────────────────────────────────────────────────────────────────────
+
+describe('header', () => {
+  it('index.html does not contain the logo image element', () => {
+    expect(html).not.toContain('class="logo"')
+  })
+})
+
 // ── Geolocation auto-fill on page load ───────────────────────────────────────
 
 describe('geolocation auto-fill on page load', () => {
@@ -288,20 +315,44 @@ describe('geolocation auto-fill on page load', () => {
     geolocation.getCurrentPosition(
       pos => {
         if (!locationInput.value.trim()) {
-          locationInput.value = `${pos.coords.latitude},${pos.coords.longitude}`
+          locationInput.dataset.geoValue = `${pos.coords.latitude},${pos.coords.longitude}`
+          locationInput.value = 'Current location'
+          locationInput.classList.add('geo-filled')
         }
       },
       () => {},
     )
+    locationInput.addEventListener('input', () => {
+      delete locationInput.dataset.geoValue
+      locationInput.classList.remove('geo-filled')
+    })
   }
 
-  it('fills location with "lat,lng" when geolocation is granted', () => {
+  it('displays "Current location" when geolocation is granted', () => {
     buildLocationDOM()
     initGeo({
       getCurrentPosition: success =>
         success({ coords: { latitude: 37.7749, longitude: -122.4194 } }),
     })
-    expect(document.getElementById('location').value).toBe('37.7749,-122.4194')
+    expect(document.getElementById('location').value).toBe('Current location')
+  })
+
+  it('stores actual lat,lng in dataset.geoValue', () => {
+    buildLocationDOM()
+    initGeo({
+      getCurrentPosition: success =>
+        success({ coords: { latitude: 37.7749, longitude: -122.4194 } }),
+    })
+    expect(document.getElementById('location').dataset.geoValue).toBe('37.7749,-122.4194')
+  })
+
+  it('adds geo-filled class to location input', () => {
+    buildLocationDOM()
+    initGeo({
+      getCurrentPosition: success =>
+        success({ coords: { latitude: 37.7749, longitude: -122.4194 } }),
+    })
+    expect(document.getElementById('location').classList.contains('geo-filled')).toBe(true)
   })
 
   it('leaves field empty when user denies geolocation', () => {
@@ -326,5 +377,22 @@ describe('geolocation auto-fill on page load', () => {
         success({ coords: { latitude: 37.7749, longitude: -122.4194 } }),
     })
     expect(document.getElementById('location').value).toBe('Mars Colony Alpha')
+  })
+
+  it('clears dataset.geoValue and geo-filled class when user edits the field', () => {
+    buildLocationDOM()
+    initGeo({
+      getCurrentPosition: success =>
+        success({ coords: { latitude: 37.7749, longitude: -122.4194 } }),
+    })
+    const input = document.getElementById('location')
+    input.value = 'Paris'
+    input.dispatchEvent(new Event('input'))
+    expect(input.dataset.geoValue).toBeUndefined()
+    expect(input.classList.contains('geo-filled')).toBe(false)
+  })
+
+  it('style.css defines .geo-filled for the location dot', () => {
+    expect(css).toMatch(/\.geo-filled/)
   })
 })
