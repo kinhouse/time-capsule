@@ -12,6 +12,21 @@
   --radius: 10px;
 }
 
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f4ff;
+    --surface: #ffffff;
+    --surface-2: #eeeeff;
+    --accent: #6055e0;
+    --accent-hover: #4a40c8;
+    --text: #1a1a2e;
+    --muted: #5a5a7a;
+    --border: #d4d4e8;
+    --gcal-blue: #4285f4;
+    --gcal-blue-hover: #3070d6;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -297,6 +312,12 @@ input[type="checkbox"] {
 .reset-btn:hover {
   border-color: var(--accent);
   color: var(--text);
+}
+
+@media (prefers-color-scheme: light) {
+  body::before {
+    display: none;
+  }
 }
 
 /* Responsive */
