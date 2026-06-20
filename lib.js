@@ -64,7 +64,7 @@ export function isIosSafari(ua) {
 
 export function buildDefaultDescription(url, date = new Date()) {
   const dateStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-  return `…\n\nCreated by ${url} on ${dateStr}`
+  return `…\n\nCreated on ${dateStr} by ${url}`
 }
 
 export function buildGCalUrl({ title, startStr, endStr, description, location }) {

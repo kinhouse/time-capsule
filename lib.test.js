@@ -516,9 +516,9 @@ describe('buildDefaultDescription', () => {
     expect(result).toMatch(/^…\n\n/)
   })
 
-  it('ends with a traceability line containing the URL and date', () => {
+  it('ends with a traceability line containing the date then the URL', () => {
     const result = buildDefaultDescription('https://example.com/', new Date(2026, 5, 20))
-    expect(result).toContain('Created by https://example.com/ on June 20, 2026')
+    expect(result).toContain('Created on June 20, 2026 by https://example.com/')
   })
 
   it('uses the provided URL verbatim', () => {
